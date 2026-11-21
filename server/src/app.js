@@ -24,6 +24,15 @@ export function createApp(store = createStore()) {
     } catch { return res.status(401).json({ error: 'Invalid or expired token' }); }
   }
 
+  function optionalAuth(req, _res, next) {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    if (token) {
+      try { req.user = jwt.verify(token, JWT_SECRET); } catch { /* Treat invalid optional credentials as anonymous. */ }
+    }
+    return next();
+  }
+
   const requireRole = (...roles) => (req, res, next) => roles.includes(req.user.role) ? next() : res.status(403).json({ error: 'Insufficient permissions' });
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok', service: 'hireflow-api' }));
@@ -42,7 +51,14 @@ export function createApp(store = createStore()) {
     return res.json({ user: safeUser(user), token: issueToken(user) });
   });
 
-  app.get('/api/jobs', (_req, res) => res.json({ jobs: store.jobs.filter((job) => job.status === 'open') }));
+  app.get('/api/jobs', optionalAuth, (req, res) => {
+    let jobs = store.jobs.filter((job) => job.status === 'open');
+    if (req.user?.role === 'applicant') {
+      const appliedJobIds = new Set(store.applications.filter((item) => item.applicantId === req.user.sub).map((item) => item.jobId));
+      jobs = jobs.filter((job) => !appliedJobIds.has(job.id));
+    }
+    return res.json({ jobs });
+  });
   app.post('/api/jobs', auth, requireRole('recruiter', 'admin'), (req, res) => {
     const { title, department, location, description } = req.body || {};
     if (!title || !department || !location) return res.status(400).json({ error: 'Title, department, and location are required' });

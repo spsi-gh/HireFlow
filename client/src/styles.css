@@ -56,4 +56,12 @@ textarea { width: 100%; resize: vertical; border: 1px solid #d9e3dc; border-radi
 .dialog h2 { margin-bottom: 5px; }
 .dialog form { margin-top: 22px; }
 .application-row { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #dfe8e1; }
-@media (max-width: 760px) { .topbar { align-items: flex-start; flex-direction: column; } .metrics { grid-template-columns: repeat(2, 1fr); } .board { grid-template-columns: repeat(6, 190px); } .login-card { padding: 28px; } .form-grid { grid-template-columns: 1fr; } }
+.application-card { margin-bottom: 16px; padding: 0 18px 18px; border: 1px solid #e0e9e2; border-radius: 14px; background: white; }
+.application-row span { display: grid; gap: 5px; }
+.application-row small { color: #718278; }
+.application-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-top: 14px; color: #56685d; font-size: .88rem; }
+.application-details span { display: grid; gap: 4px; }
+.application-details b { color: #83948a; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+.application-details a { color: #175c45; font-weight: 700; }
+.application-details .cover-letter { grid-column: 1 / -1; line-height: 1.5; }
+@media (max-width: 760px) { .topbar { align-items: flex-start; flex-direction: column; } .metrics { grid-template-columns: repeat(2, 1fr); } .board { grid-template-columns: repeat(6, 190px); } .login-card { padding: 28px; } .form-grid, .application-details { grid-template-columns: 1fr; } .application-details .cover-letter { grid-column: auto; } }

@@ -49,3 +49,18 @@ test('applicant must submit application details and recruiter can update status'
   assert.equal(updated.status, 200);
   assert.equal(updated.body.application.stage, 'Interview');
 });
+
+test('applied job is removed from applicant open roles and details are retained', async () => {
+  const isolatedApp = createApp();
+  const applicantToken = await (async () => (await request(isolatedApp).post('/api/auth/login').send({ email: 'applicant@hireflow.local', password: 'Password123!' })).body.token)();
+  const jobsBefore = await request(isolatedApp).get('/api/jobs').set('Authorization', `Bearer ${applicantToken}`);
+  const job = jobsBefore.body.jobs[0];
+  const details = { phone: '8888888888', education: 'B.Tech Information Technology', experience: '1 year frontend development', coverLetter: 'Please consider my application.', resumeUrl: 'https://example.com/candidate.pdf' };
+  const submitted = await request(isolatedApp).post(`/api/jobs/${job.id}/applications`).set('Authorization', `Bearer ${applicantToken}`).send(details);
+  assert.equal(submitted.status, 201);
+  const jobsAfter = await request(isolatedApp).get('/api/jobs').set('Authorization', `Bearer ${applicantToken}`);
+  assert.equal(jobsAfter.body.jobs.some((item) => item.id === job.id), false);
+  const applications = await request(isolatedApp).get('/api/applications').set('Authorization', `Bearer ${applicantToken}`);
+  assert.equal(applications.body.applications[0].coverLetter, details.coverLetter);
+  assert.equal(applications.body.applications[0].resumeUrl, details.resumeUrl);
+});
