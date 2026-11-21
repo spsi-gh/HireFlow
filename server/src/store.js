@@ -20,7 +20,8 @@ export function createStore() {
     findUserByEmail: (email) => users.find((user) => user.email.toLowerCase() === email.toLowerCase()),
     findUser: (userId) => users.find((user) => user.id === userId),
     createUser: (input) => { const user = { id: id(), ...input }; users.push(user); return user; },
-    createJob: (input) => { const job = { id: id(), ...input, status: 'open', createdAt: now() }; jobs.push(job); return job; },
+    createJob: (input) => { const job = { id: id(), ...input, status: 'open', createdAt: now(), updatedAt: now() }; jobs.push(job); return job; },
+    updateJob: (job, input) => { Object.assign(job, input, { updatedAt: now() }); return job; },
     createApplication: (input) => { const application = { id: id(), ...input, stage: 'Applied', createdAt: now(), updatedAt: now() }; applications.push(application); return application; },
     findApplication: (applicationId) => applications.find((application) => application.id === applicationId),
     addAudit: (input) => { audit.push({ id: id(), ...input, createdAt: now() }); }

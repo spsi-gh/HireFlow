@@ -48,11 +48,21 @@ export function createApp(store = createStore()) {
     if (!title || !department || !location) return res.status(400).json({ error: 'Title, department, and location are required' });
     return res.status(201).json({ job: store.createJob({ title, department, location, description: description || '', createdBy: req.user.sub }) });
   });
+  app.patch('/api/jobs/:jobId', auth, requireRole('recruiter', 'admin'), (req, res) => {
+    const job = store.jobs.find((candidate) => candidate.id === req.params.jobId);
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    const { title, department, location, description, status } = req.body || {};
+    if (!title || !department || !location || (status && !['open', 'closed'].includes(status))) return res.status(400).json({ error: 'Title, department, location, and a valid status are required' });
+    return res.json({ job: store.updateJob(job, { title, department, location, description: description || '', status: status || job.status }) });
+  });
 
   app.post('/api/jobs/:jobId/applications', auth, requireRole('applicant'), (req, res) => {
     const job = store.jobs.find((candidate) => candidate.id === req.params.jobId);
     if (!job) return res.status(404).json({ error: 'Job not found' });
-    const application = store.createApplication({ jobId: job.id, applicantId: req.user.sub, resumeUrl: req.body?.resumeUrl || '' });
+    if (store.applications.some((item) => item.jobId === job.id && item.applicantId === req.user.sub)) return res.status(409).json({ error: 'You have already applied to this role' });
+    const { phone, education, experience, coverLetter, resumeUrl } = req.body || {};
+    if (!phone?.trim() || !education?.trim() || !experience?.trim() || !coverLetter?.trim() || !resumeUrl?.trim()) return res.status(400).json({ error: 'Phone, education, experience, cover letter, and resume link are required' });
+    const application = store.createApplication({ jobId: job.id, applicantId: req.user.sub, phone, education, experience, coverLetter, resumeUrl });
     store.addAudit({ applicationId: application.id, actorId: req.user.sub, action: 'application_created', toStage: application.stage });
     return res.status(201).json({ application });
   });
