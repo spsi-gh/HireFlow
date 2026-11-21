@@ -33,6 +33,10 @@ npm --prefix client run dev
 
 See `.env.example` files in `server` and `client` for configuration.
 
+## GitHub Pages
+
+The frontend is configured for the repository path `/HireFlow/` and is deployed by `.github/workflows/deploy-pages.yml`. In the repository settings, set Pages to use GitHub Actions. The API must still be hosted separately and supplied through the `VITE_API_URL` environment variable for login and data operations to work outside local development.
+
 ## Demo accounts
 
 The API seeds one recruiter and one applicant when it starts:
