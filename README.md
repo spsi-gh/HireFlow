@@ -234,4 +234,4 @@ The current implementation represents the first working MVP. Potential future en
 
 HireFlow aims to make recruitment more organized, transparent, and efficient by bringing job management, candidate tracking, and onboarding workflows into a unified platform.
 
-**Simplifying recruitment. Organizing talent. Streamlining hiring.**
+**Simplifying recruitment. Organizing talent. Streamlining hiring..**
