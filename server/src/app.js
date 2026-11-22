@@ -52,7 +52,8 @@ export function createApp(store = createStore()) {
   });
 
   app.get('/api/jobs', optionalAuth, (req, res) => {
-    let jobs = store.jobs.filter((job) => job.status === 'open');
+    const canManageJobs = ['recruiter', 'admin'].includes(req.user?.role);
+    let jobs = canManageJobs ? store.jobs : store.jobs.filter((job) => job.status === 'open');
     if (req.user?.role === 'applicant') {
       const appliedJobIds = new Set(store.applications.filter((item) => item.applicantId === req.user.sub).map((item) => item.jobId));
       jobs = jobs.filter((job) => !appliedJobIds.has(job.id));
@@ -75,6 +76,7 @@ export function createApp(store = createStore()) {
   app.post('/api/jobs/:jobId/applications', auth, requireRole('applicant'), (req, res) => {
     const job = store.jobs.find((candidate) => candidate.id === req.params.jobId);
     if (!job) return res.status(404).json({ error: 'Job not found' });
+    if (job.status !== 'open') return res.status(409).json({ error: 'This job is no longer accepting applications' });
     if (store.applications.some((item) => item.jobId === job.id && item.applicantId === req.user.sub)) return res.status(409).json({ error: 'You have already applied to this role' });
     const { phone, education, experience, coverLetter, resumeUrl } = req.body || {};
     if (!phone?.trim() || !education?.trim() || !experience?.trim() || !coverLetter?.trim() || !resumeUrl?.trim()) return res.status(400).json({ error: 'Phone, education, experience, cover letter, and resume link are required' });
